@@ -1,4 +1,4 @@
-# Title
+# Inflation of Egg Prices Across Canadian Grocery Stores
 
 ## Abstract
 
