@@ -1,0 +1,15 @@
+---
+title: "paper.qmd"
+format: html
+---
+
+```{r}
+library(DBI)
+library(RSQLite)
+
+connection <- dbConnect(RSQLite::SQLite(), "../data/data.sqlite")
+script <- readLines("../scripts/egg_data.sql")
+script <- paste(script, collapse = "\n")
+data <- dbGetQuery(connection, script)
+```
+
