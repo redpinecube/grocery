@@ -29,7 +29,7 @@ Groceries in Canada have been one of the consumer goods most affected by inflati
 
 # Data
 
-The data for this analysis was sourced from Jacob Filipp's Project Hammer, [@citeData]. SQL was used to clean and derive data related to egg prices. All figures were made using [@citeR] .
+The data for this analysis was sourced from Jacob Filipp's Project Hammer, [@citeData]. SQL was used to clean and derive data related to egg prices. All figures were made using R [@citeR].
 
 ### Vendor
 
