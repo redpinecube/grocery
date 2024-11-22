@@ -83,11 +83,15 @@ Some common egg sizes are : extra large, large, medium, small, and super sized. 
 Measuring egg size categorically like this isn't the best data format as measurements like this can be subjective and change from brand to brand. These measurements are a weaker estimate, compared to measurements of weight.
 
 # Results
-The biggest factor that affect egg prices is the vendor. As we can see from @fig-vendor, Loblaws essentially dictates what prices eggs should have. If we see egg prices by brand, they are mostly stable. In the earlier months of the year prices were relatively lower than prices in the middle of the year. Prices are also decreasing towards the end of the year.
+The biggest factor that affect egg prices is the vendor. As we can see from @fig-vendor, Loblaws essentially dictates what prices eggs should have. If we see egg prices by brand, they are mostly stable. In the earlier months of the year prices were relatively lower than prices in the middle of the year. Prices are also decreasing towards the end of the year. The cheapest eggs are available from No Name and the most expensive eggs are the eggs from PC Blue and PC Organics. Smaller eggs are also cheaper than larger eggs. Using these results consumers can make more educated food choices to save money. 
 
 
 # Discussion
 The best way to reduce prices is to get rid of the Canadian grocery monopoly. Unfortunately, this is pretty difficult for the average consumer so some actionable ideas are to buy groceries from the brand No Name. Some other ideas are to eat more plant based meals, buy groceries that last longer such as beans and rice in bulk, and meal planning in advance, [@citeHughes].
+
+This analysis is not perfect due to missing data and bias. Outside of these major grocery chains, there are many smaller farmers who sell their food locally, their prices are not reflected in the data. Additionally, to understand the whole picture of food prices its important to take food substitutions into consideration. When prices are very high, people may opt to use food substitutions, this analysis fails to take food substitutions into account. 
+
+There is also a correlation between size and price but there are also some discrepancies which may be the result of egg quality. This factor wasn't taken into account in the analysis. We can't say that larger egg sizes cause higher prices.
 
 
 ```{r}
