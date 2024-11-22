@@ -1,15 +1,94 @@
 ---
-title: "paper.qmd"
-format: html
+title: "Inflation of Egg Prices Across Canadian Grocery Stores"
+author: Tara Chakkithara
+date: today
+format: pdf
+warning: false
+echo: false
 ---
 
 ```{r}
 library(DBI)
 library(RSQLite)
+library(tidyverse)
+library(lubridate)
 
 connection <- dbConnect(RSQLite::SQLite(), "../data/data.sqlite")
 script <- readLines("../scripts/egg_data.sql")
 script <- paste(script, collapse = "\n")
 data <- dbGetQuery(connection, script)
+data$nowtime <- ymd_hms(data$nowtime)
+data$current_price <- as.numeric(data$current_price)
 ```
+
+## Data
+
+The data for this analysis was sourced from Jacob Filipp's Project Hammer. 
+### Vendor
+
+```{r}
+vendor_data <- data |>
+  filter(!is.na(current_price)) |>
+  mutate(month = format(nowtime, "%m")) |>
+  select(vendor, current_price, month) |>
+  group_by(vendor, month) |>
+  summarise(avg_price = mean(current_price), .groups = "drop")
+
+vendor_data |>
+  ggplot(aes(x = month, y = avg_price, color = vendor, group = vendor)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Month", y = "Average Egg Carton Price", color = "Vendor") +
+  theme_minimal()
+```
+
+### Brand
+
+```{r}
+brand_data <- data |>
+  filter(!is.na(current_price)) |>
+  mutate(month = format(nowtime, "%m")) |>
+  select(brand, current_price, month) |>
+  group_by(brand, month) |>
+  summarise(avg_price = mean(current_price), .groups = "drop")
+
+brand_data |>
+  ggplot(aes(x = month, y = avg_price, color = brand, group = brand)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Month", y = "Average Egg Carton Price", color = "Brand") +
+  theme_minimal()
+```
+
+### Egg Size
+
+```{r}
+egg_size_data <- data |>
+  mutate(size = case_when(
+    product_name == "Extra Large Size Free-Range Brown Eggs" ~ 'Extra Large',
+    product_name == "Grade A Brown Eggs, Extra Large" ~ "Extra Large",
+    product_name == "Grade A Eggs, Super Extra-Large" ~ "Extra Large",
+    product_name == "Extra Large Free Run Brown Eggs" ~ "Extra Large",
+    product_name == "Super Bon-Ee Grade A White Eggs, Super Extra Large" ~ "Super Extra Large",
+    product_name == "Medium Grade A White Eggs" ~ "Small",
+    product_name == "Naturegg Free Run Omega 3 Eggs" ~ "Small",
+    product_name == "Omega 3 White Eggs" ~ "Small",
+    product_name == "Super Bon-Ee Grade A Double Yolk White Eggs" ~ "Small",
+    product_name == "Medium Size Free-Range Brown Eggs " ~ "Medium",
+    TRUE ~ "Large"
+  )) |>
+  filter(!is.na(current_price)) |>
+  mutate(month = format(nowtime, "%m")) |>
+  select(size, current_price, month) |>
+  group_by(size, month) |>
+  summarise(avg_price = mean(current_price), .groups = "drop")
+
+egg_size_data |>
+  ggplot(aes(x = month, y = avg_price, color = size, group = size)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Month", y = "Average Egg Carton Price", color = "Size") +
+  theme_minimal()
+```
+
 
