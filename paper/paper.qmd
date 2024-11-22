@@ -82,6 +82,14 @@ Some common egg sizes are : extra large, large, medium, small, and super sized. 
 
 Measuring egg size categorically like this isn't the best data format as measurements like this can be subjective and change from brand to brand. These measurements are a weaker estimate, compared to measurements of weight.
 
+# Results
+The biggest factor that affect egg prices is the vendor. As we can see from @fig-vendor, Loblaws essentially dictates what prices eggs should have. If we see egg prices by brand, they are mostly stable. In the earlier months of the year prices were relatively lower than prices in the middle of the year. Prices are also decreasing towards the end of the year.
+
+
+# Discussion
+The best way to reduce prices is to get rid of the Canadian grocery monopoly. Unfortunately, this is pretty difficult for the average consumer so some actionable ideas are to buy groceries from the brand No Name. Some other ideas are to eat more plant based meals, buy groceries that last longer such as beans and rice in bulk, and meal planning in advance, [@citeHughes].
+
+
 ```{r}
 #| label: fig-egg
 #| fig-cap: "Average Egg Carton Prices By Egg Size in 2024"
