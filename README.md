@@ -13,7 +13,7 @@ The repo is structured as follows :
   
 ## Reproducibility 
 This project is an R project.
-For the sake of reproducibility, it is recommended to use the RStudio IDE.
+For reproducibility, it is recommended to use the RStudio IDE.
 
 ## Disclaimer
 LLMs were not used for this paper. 
