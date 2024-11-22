@@ -7,9 +7,9 @@ After the COVID-19 pandemic, inflation has been a large economic issue for the m
 The repo is structured as follows :
 
 -   `data` contains the raw data obtained from: https://jacobfilipp.com/hammer/
--   `other` contains relevant literature, and sketches.
+-   `sketches` contains initial sketches of figures.
 -   `paper` contains the files used to generate the paper, including the Quarto document and reference bibliography file, as well as the PDF of the paper. 
--   `scripts` contains the SQL scripts used to clean and manipulate data.
+-   `scripts` contains the SQL scripts to clean data. It contains R scripts to simulate and test data.  
   
 ## Reproducibility 
 This project is an R project.
