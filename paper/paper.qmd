@@ -3,6 +3,7 @@ title: "Inflation of Egg Prices Across Canadian Grocery Stores"
 author: Tara Chakkithara
 date: "`r Sys.Date()`"
 abstract: "After the COVID-19 pandemic, inflation has been a large economic issue for the majority of Canadians. This analysis studies the inflation of egg prices in 2024 and finds that prices have decreased compared to mid 2024. By understanding how the prices of staple grocery items fluctuate, we can gauge the effect of inflation on the general Canadian consumer."
+thanks: "Code available at : https://github.com/redpinecube/grocery "
 format: pdf
 warning: false
 echo: false
@@ -10,9 +11,6 @@ bibliography: references.bib
 ---
 
 # Introduction
-
-The COVID-19 pandemic caused high amounts of inflation in Canada, but grocieries were one of the goods that were hit the worst compared to other consumer items. Some factors that affect grocery prices are the "cost of energy, labor, and transportation" [https://www.bankofcanada.ca/2024/07/what-drives-up-the-price-of-groceries/]. 
-
 
 ```{r}
 library(DBI)
@@ -27,13 +25,20 @@ data <- dbGetQuery(connection, script)
 data$nowtime <- ymd_hms(data$nowtime)
 data$current_price <- as.numeric(data$current_price)
 ```
+Groceries in Canada have been one of the consumer goods most affected by inflation. According to the Bank of Canada, the main reason for this is because grocery prices are affected by factors such as "cost of energy, labor, and transportation", [@citeBankOfCanada]. Past inflation trends in the United States show that grocieries most affected by inflation are eggs, dairy products, and lettuce. In 2022, egg prices increased by 60% in the United States [@citeCNBC]. This analysis studies Canadian egg prices as they are a common good most people buy and they are heavily impacted by inflation. Another reason why groceries are very expensive is because there is limited competition in the grocery market. Loblaws essentially dominates Canada's market and practices price gouging [@citeAppel].
 
-## Data
+# Data
 
-The data for this analysis was sourced from Jacob Filipp's Project Hammer. 
+The data for this analysis was sourced from Jacob Filipp's Project Hammer, [@citeData]. SQL was used to clean and derive data related to egg prices. All figures were made using [@citeR] .
+
 ### Vendor
 
+12 Unit Egg Cartons sold in Canada have 2 main vendors : Loblaws and NoFrills. This is a bit misleading since Loblaws owns NoFrills but their prices are quite different as seen in @fig-vendor. However, price inflation and deflation seem to follow a similar trend for both vendors. In August 2024, average egg prices were the highest. Interestingly, the two vendors had similar prices in March.
+
 ```{r}
+#| label: fig-vendor
+#| fig-cap: "Average Egg Carton Prices By Vendor in 2024"
+
 vendor_data <- data |>
   filter(!is.na(current_price)) |>
   mutate(month = format(nowtime, "%m")) |>
@@ -51,7 +56,11 @@ vendor_data |>
 
 ### Brand
 
+The main brands that sell 12 unit egg cartons in Canada are : Burnbrae Farms, Goldegg, Gray Ridge, No Name, PC Blue Menu, PC Organics, President's Choice, and Rowe Farms. As seen in @fig-brand, Burnbrae Farms is the most susceptible to price changes while No Name and the PC brands have remained consistent. Most prices by brand have started to dip towards the end of 2024 or are remaining consistent.
+
 ```{r}
+#| label: fig-brand
+#| fig-cap: "Average Egg Carton Prices By Brand in 2024"
 brand_data <- data |>
   filter(!is.na(current_price)) |>
   mutate(month = format(nowtime, "%m")) |>
@@ -69,7 +78,13 @@ brand_data |>
 
 ### Egg Size
 
+Some common egg sizes are : extra large, large, medium, small, and super sized. A seen in @fig-egg, medium sized eggs and jumbo sized eggs are the most expensive eggs. Small eggs are cheaper than large eggs. Interestingly, the prices of extra large eggs have fallen in the past few months.
+
+Measuring egg size categorically like this isn't the best data format as measurements like this can be subjective and change from brand to brand. These measurements are a weaker estimate, compared to measurements of weight.
+
 ```{r}
+#| label: fig-egg
+#| fig-cap: "Average Egg Carton Prices By Egg Size in 2024"
 egg_size_data <- data |>
   mutate(size = case_when(
     product_name == "Extra Large Size Free-Range Brown Eggs" ~ 'Extra Large',
@@ -97,5 +112,3 @@ egg_size_data |>
   labs(x = "Month", y = "Average Egg Carton Price", color = "Size") +
   theme_minimal()
 ```
-
-
