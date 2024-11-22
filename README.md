@@ -16,4 +16,4 @@ This project is an R project.
 For the sake of reproducibility, it is recommended to use the RStudio IDE.
 
 ## Disclaimer
-Large language models were not used for this paper. 
+LLMs were not used for this paper. 
