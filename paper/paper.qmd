@@ -1,11 +1,18 @@
 ---
 title: "Inflation of Egg Prices Across Canadian Grocery Stores"
 author: Tara Chakkithara
-date: today
+date: "`r Sys.Date()`"
+abstract: "After the COVID-19 pandemic, inflation has been a large economic issue for the majority of Canadians. This analysis studies the inflation of egg prices in 2024 and finds that prices have decreased compared to mid 2024. By understanding how the prices of staple grocery items fluctuate, we can gauge the effect of inflation on the general Canadian consumer."
 format: pdf
 warning: false
 echo: false
+bibliography: references.bib
 ---
+
+# Introduction
+
+The COVID-19 pandemic caused high amounts of inflation in Canada, but grocieries were one of the goods that were hit the worst compared to other consumer items. Some factors that affect grocery prices are the "cost of energy, labor, and transportation" [https://www.bankofcanada.ca/2024/07/what-drives-up-the-price-of-groceries/]. 
+
 
 ```{r}
 library(DBI)
