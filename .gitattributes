@@ -1,1 +1,4 @@
 data/data.sqlite filter=lfs diff=lfs merge=lfs -text
+data/clean/clean_data.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/hammer-4-product.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/hammer-4-raw.csv filter=lfs diff=lfs merge=lfs -text
