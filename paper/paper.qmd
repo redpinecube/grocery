@@ -355,9 +355,11 @@ data |>
 
 ## Measurement
 
-The data set used for this analysis was sourced from Jacob Filipp's Project Hammer, a project with the goal of "increasing competition" and "reducing collusion" in the Canadian grocery market [@citeData]. This data set contains time series data of grocery prices, collected from major food retailers in Canada in the year 2024. Additional information such as brand information, unit description, and product name were also collected and assigned a product id.
+Variables such as egg size are challenging to measure accurately, as many brands rely on subjective labels like "large," "medium," or "extra large." On the other hand, some variables in this analysis, such as egg price, are easier to measure and more reliable, as prices are typically set by the retailer. However, it’s important to note that gathering a comprehensive measurement of prices across all vendors and brands is difficult, particularly due to the large number of small businesses across Canada that this dataset may not fully capture.
 
-The data used for this analysis was sourced from Jacob Filipp's Project Hammer, a project with the goal of "increasing competition" and "reducing collusion" in the Canadian grocery market - cite. The raw data consists of two data sets, one containing product information of groceries at popular Canadian food retailers, and the other containing the time series data of product prices. The conjoined data set is large and has over 10,000 entries.
+Similarly, assessing farming conditions is inherently subjective. Farmers within each category often follow different standards, making it difficult to measure farming conditions consistently.
+
+# Model
 
 # Results
 
