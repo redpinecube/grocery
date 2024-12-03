@@ -1,5 +1,6 @@
 ### simulate the variables :
 ### vendor, brand, egg size, time, price, type, and sale. 
+
 library(lubridate)
 
 set.seed(123)

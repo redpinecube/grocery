@@ -13,114 +13,360 @@ bibliography: references.bib
 # Introduction
 
 ```{r}
-library(DBI)
-library(RSQLite)
 library(tidyverse)
-library(lubridate)
-
-connection <- dbConnect(RSQLite::SQLite(), "../data/data.sqlite")
-script <- readLines("../scripts/egg_data.sql")
-script <- paste(script, collapse = "\n")
-data <- dbGetQuery(connection, script)
-data$nowtime <- ymd_hms(data$nowtime)
-data$current_price <- as.numeric(data$current_price)
+library(RColorBrewer)
+data <- read_csv("../data/clean/clean_data.csv")
 ```
+
 Groceries in Canada have been one of the consumer goods most affected by inflation. According to the Bank of Canada, the main reason for this is because grocery prices are affected by factors such as "cost of energy, labor, and transportation", [@citeBankOfCanada]. Past inflation trends in the United States show that grocieries most affected by inflation are eggs, dairy products, and lettuce. In 2022, egg prices increased by 60% in the United States [@citeCNBC]. This analysis studies Canadian egg prices as they are a common good most people buy and they are heavily impacted by inflation. Another reason why groceries are very expensive is because there is limited competition in the grocery market. Loblaws essentially dominates Canada's market and practices price gouging [@citeAppel].
+
+\newpage
 
 # Data
 
-The data for this analysis was sourced from Jacob Filipp's Project Hammer, [@citeData]. SQL was used to clean and derive data related to egg prices. All figures were made using R [@citeR].
+The data used for this analysis was sourced from Jacob Filipp's Project Hammer. This project "aims to drive more competition and reduce collusion in the Canadian grocery sector" [@citeData]. The raw data consists of two data sets: one containing detailed product information from the grocery vendors Voila, T&T, Loblaws, No Frills, Metro, Galleria, Walmart, and Save-On-Foods, and the other containing time series data on product prices. This data was filtered and cleaned using R [@citeR] and the Tidyverse package [@citeTidyverse], to examine discrepancies in egg prices over time. A clean data set was constructed with the following variables for analysis: price of an egg, vendor, time, egg color, egg size, product brand, egg type, and whether the product was on sale or not. This section briefly examines variables of interest.
 
-### Vendor
+### Egg Prices
 
-12 Unit Egg Cartons sold in Canada have 2 main vendors : Loblaws and NoFrills. This is a bit misleading since Loblaws owns NoFrills but their prices are quite different as seen in @fig-vendor. However, price inflation and deflation seem to follow a similar trend for both vendors. In August 2024, average egg prices were the highest. Interestingly, the two vendors had similar prices in March.
-
-```{r}
-#| label: fig-vendor
-#| fig-cap: "Average Egg Carton Prices By Vendor in 2024"
-
-vendor_data <- data |>
-  filter(!is.na(current_price)) |>
-  mutate(month = format(nowtime, "%m")) |>
-  select(vendor, current_price, month) |>
-  group_by(vendor, month) |>
-  summarise(avg_price = mean(current_price), .groups = "drop")
-
-vendor_data |>
-  ggplot(aes(x = month, y = avg_price, color = vendor, group = vendor)) +
-  geom_point() +
-  geom_line() +
-  labs(x = "Month", y = "Average Egg Carton Price", color = "Vendor") +
-  theme_minimal()
-```
-
-### Brand
-
-The main brands that sell 12 unit egg cartons in Canada are : Burnbrae Farms, Goldegg, Gray Ridge, No Name, PC Blue Menu, PC Organics, President's Choice, and Rowe Farms. As seen in @fig-brand, Burnbrae Farms is the most susceptible to price changes while No Name and the PC brands have remained consistent. Most prices by brand have started to dip towards the end of 2024 or are remaining consistent.
+The average price of an egg in Canada in 2024 was \$0.52. The minimum price of an egg was \$0.3 while the maximum price was \$0.82. The distribution of egg prices can be seen in [@fig-egg-density], with two modes at 0.42 and 0.6. The trend of egg prices over time in 2024 can be seen in [@fig-egg-price]. In 2024, egg prices increased dramatically from February to October but then faced a sharp price decline afterward. According to Sylvain Charlebois, a "professor in food distribution policy at Dalhousie University," grocery prices dropped in fall since the Bank of Canada "cut interest rates by 25 basis points" [@citeNationalPost].
 
 ```{r}
-#| label: fig-brand
-#| fig-cap: "Average Egg Carton Prices By Brand in 2024"
-brand_data <- data |>
-  filter(!is.na(current_price)) |>
-  mutate(month = format(nowtime, "%m")) |>
-  select(brand, current_price, month) |>
-  group_by(brand, month) |>
-  summarise(avg_price = mean(current_price), .groups = "drop")
+#| label: fig-egg-density
+#| fig-cap: "Density of Canadian Egg Prices in 2024"
+#| fig.width: 5
+#| fig.height: 3
 
-brand_data |>
-  ggplot(aes(x = month, y = avg_price, color = brand, group = brand)) +
-  geom_point() +
-  geom_line() +
-  labs(x = "Month", y = "Average Egg Carton Price", color = "Brand") +
-  theme_minimal()
+data |> 
+  mutate(
+    price_per_unit = if_else(price_per_unit > 3, price_per_unit / 10, price_per_unit)
+  ) |>
+  ggplot(aes(x = price_per_unit)) +
+  geom_density(fill = "skyblue", color = "skyblue", alpha = 0.6) + 
+  labs(
+    x = "Price Per Egg",                       
+    y = "Density",                             
+  ) +
+  theme_bw() +                            
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  
+    axis.title = element_text(size = 12),       
+    axis.text = element_text(size = 10),       
+    panel.grid.major = element_line(color = "gray90"),  
+    panel.grid.minor = element_blank(),                
+    plot.caption = element_text(size = 8, face = "italic", hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
 ```
 
-### Egg Size
+```{r}
+#| label: fig-egg-price
+#| fig-cap: "Canadian Egg Prices by Month in 2024"
+#| fig.width: 5
+#| fig.height: 3
 
-Some common egg sizes are : extra large, large, medium, small, and super sized. A seen in @fig-egg, medium sized eggs and jumbo sized eggs are the most expensive eggs. Small eggs are cheaper than large eggs. Interestingly, the prices of extra large eggs have fallen in the past few months.
+data |> 
+  mutate(
+    price_per_unit = if_else(price_per_unit > 3, price_per_unit / 10, price_per_unit),
+    month = month(time) 
+  ) |> 
+  group_by(month) |> 
+  summarise(avg_price = mean(price_per_unit, na.rm = TRUE)) |> 
+  ggplot(aes(x = month, y = avg_price)) +
+  geom_line(color = "skyblue") +
+  labs(x = "Month", y = "Average Price per Egg") +
+  scale_x_continuous(
+    breaks = 1:12,
+  ) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 10),       
+    panel.grid.major = element_line(color = "gray90"),  
+    panel.grid.minor = element_blank(),                
+    plot.caption = element_text(size = 8, face = "italic", hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
+```
 
-Measuring egg size categorically like this isn't the best data format as measurements like this can be subjective and change from brand to brand. These measurements are a weaker estimate, compared to measurements of weight.
+### Grocery Vendors & Brands
+
+Three popular grocery vendors were considered in this analysis: Loblaws, Metro, and Voila. As seen in [@fig-vendor-brands], the brands these vendors source their eggs from include Blue Menu, Compliments, Conestoga Eggs, Gold Egg, Gray Ridge, Longo's, and President's Choice. Among the vendors, Metro offers the most expensive eggs, followed by Loblaws, with Voila being the least expensive, as seen in [@fig-vendor-price]. Price per egg at Metro is \$0.64 on average, \$0.62 for Loblaws, and \$0.51 for Voila. From February to April, the price of eggs decreased for Metro and Voila while it increased for Loblaws. During this price hike, Loblaws was accused of price gouging by many consumers, prompting a boycott of the retailer [@citeAppel].
+
+According to [@fig-brand-price], Blue Menu and Conestoga Eggs are the priciest brands, while Compliments and Gray Ridge are the more affordable options. Compliments is a store brand launched by the retailer Sobeys in 2005 [@citeSobeys]. Store brands, like Compliments, are often a more economical choice for consumers compared to name brands. For example, in the United States, "consumers save more than \$40 billion a year on grocery and household purchases by opting for the store brand over the national brand version of their favorite products" [@citePLMA].
+
+```{r}
+#| label: fig-vendor-brands
+#| fig-cap: "Frequency Distribution of Price Changes by Brand"
+#| fig.width: 5
+#| fig.height: 3
+
+data |>
+  mutate(
+    price_per_unit = if_else(price_per_unit > 3, price_per_unit / 10, price_per_unit)
+  ) |>
+  ggplot(aes(x = vendor, fill = brand)) + 
+  geom_bar(position = "dodge") +        
+  labs(
+    x = "Vendor", 
+    y = "Count",
+    fill = "Brand"
+  ) +
+  scale_fill_brewer(palette = "Set3") +  
+  theme_bw() +
+  theme(
+    axis.text = element_text(size = 10),       
+    panel.grid.major = element_line(color = "gray90"),  
+    panel.grid.minor = element_blank(),                
+    plot.caption = element_text(size = 8, face = "italic", hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
+```
+
+```{r}
+#| label: fig-vendor-price
+#| fig-cap: "Average 2024 Egg Prices by Canadian Vendors over Time"
+#| fig.width: 5
+#| fig.height: 3
+data |> 
+  mutate(
+    price_per_unit = if_else(price_per_unit > 3, price_per_unit / 12, price_per_unit),
+    month = month(time) 
+  ) |> 
+  group_by(month, vendor) |>  
+  summarise(avg_price = mean(price_per_unit, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(x = month, y = avg_price, color = vendor, group = vendor)) + 
+  geom_line() +   
+  labs(
+    x = "Month",               
+    y = "Average Price per Egg", 
+    color = "Vendor"
+  ) + 
+  scale_x_continuous(
+    breaks = 1:12,  
+    labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  ) + 
+  scale_color_brewer(palette = "Set1") +
+  theme_bw() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text = element_text(size = 10),       
+    panel.grid.major = element_line(color = "gray90"),  
+    panel.grid.minor = element_blank(),                
+    plot.caption = element_text(size = 8, face = "italic", hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
+```
+
+```{r}
+#| label: fig-brand-price
+#| fig-cap: "Average 2024 Egg Prices by Canadian Brands over Time"
+#| fig.width: 5
+#| fig.height: 3
+data |> 
+  mutate(
+    price_per_unit = if_else(price_per_unit > 3, price_per_unit / 12, price_per_unit),
+    month = month(time) 
+  ) |> 
+  group_by(month, brand) |>  
+  summarise(avg_price = mean(price_per_unit, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(x = month, y = avg_price, color = brand, group = brand)) + 
+  geom_line() +   
+  labs(
+    x = "Month",               
+    y = "Average Price per Egg", 
+    color = "Brand"
+  ) + 
+  scale_x_continuous(
+    breaks = 1:12,  
+    labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  ) + 
+  scale_color_brewer(palette = "Set2") +
+  theme_bw() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text = element_text(size = 10),       
+    panel.grid.major = element_line(color = "gray90"),  
+    panel.grid.minor = element_blank(),                
+    plot.caption = element_text(size = 8, face = "italic", hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
+```
+
+### Egg Color, Size, and Type
+
+Chicken eggs sold at Metro, Loblaws, and Voila, come in two colors and three sizes. Eggs are either white or brown and they are labeled medium, large, or extra large. As seen in [@fig-egg-size], medium sized eggs are the most expensive, followed by extra large eggs, with large eggs being the cheapest. [@fig-egg-color] shows that egg color is a strong indicator of price. Brown eggs on average cost around \$0.57, while white eggs cost on average \$0.44. Brown eggs com from larger breeds of chickens that require "more food, which makes the eggs more expensive for farmers to produce" [@citeConsumerReports].
+
+Eggs are also divided by the conditions their hens are raised in. Some common ways hens can be raised is organic, free range, free run, and none of the above. Looking at [@fig-egg-type] tells us that organic eggs have an average sell price greater than \$0.70 per egg which is around \$0.20 higher than the average price of an egg. Eggs that are not raised in farms with special conditions are the cheapest with an average price point of \$0.40. Free range and free run eggs have similar price points around \$0.60 with free range being \$0.02 higher in price per egg.
+
+```{r}
+#| label: fig-egg-size
+#| fig-cap: "Average 2024 Egg Prices by Egg Size over Time"
+#| fig.width: 5
+#| fig.height: 3
+data |> 
+  mutate(
+    price_per_unit = if_else(price_per_unit > 3, price_per_unit / 12, price_per_unit),
+    month = month(time) 
+  ) |> 
+  group_by(month, size) |>  
+  summarise(avg_price = mean(price_per_unit, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(x = month, y = avg_price, color = size, group = size)) + 
+  geom_line() +   
+  labs(
+    x = "Month",               
+    y = "Average Price per Egg", 
+    color = "Size"
+  ) + 
+  scale_x_continuous(
+    breaks = 1:12,  
+    labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  ) + 
+  scale_color_brewer(palette = "Set1") +
+  theme_bw() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text = element_text(size = 10),       
+    panel.grid.major = element_line(color = "gray90"),  
+    panel.grid.minor = element_blank(),                
+    plot.caption = element_text(size = 8, face = "italic", hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
+```
+
+```{r}
+#| label: fig-egg-color
+#| fig-cap: "Average 2024 Egg Prices by Egg Color over Time"
+#| fig.width: 5
+#| fig.height: 3
+data |> 
+  mutate(
+    price_per_unit = if_else(price_per_unit > 3, price_per_unit / 12, price_per_unit),
+    month = month(time) 
+  ) |> 
+  group_by(month, color) |>  
+  summarise(avg_price = mean(price_per_unit, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(x = month, y = avg_price, color = color, group = color)) + 
+  geom_line() +   
+  labs(
+    x = "Month",               
+    y = "Average Price per Egg", 
+    color = "Color"
+  ) + 
+  scale_x_continuous(
+    breaks = 1:12,  
+    labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  ) + 
+  scale_color_brewer(palette = "Set2") +
+  theme_bw() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text = element_text(size = 10),       
+    panel.grid.major = element_line(color = "gray90"),  
+    panel.grid.minor = element_blank(),                
+    plot.caption = element_text(size = 8, face = "italic", hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
+
+```
+
+```{r}
+#| label: fig-egg-type
+#| fig-cap: "Average 2024 Egg Prices by Farming Conditions"
+#| fig.width: 5
+#| fig.height: 3
+data |> 
+  mutate(
+    price_per_unit = if_else(price_per_unit > 3, price_per_unit / 12, price_per_unit),
+    month = month(time) 
+  ) |> 
+  group_by(month, type) |>  
+  summarise(avg_price = mean(price_per_unit, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(x = month, y = avg_price, color = type, group = type)) + 
+  geom_line() +   
+  labs(
+    x = "Month",               
+    y = "Average Price per Egg", 
+    color = "Farming Conditions"
+  ) + 
+  scale_x_continuous(
+    breaks = 1:12,  
+    labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  ) + 
+  scale_color_brewer(palette = "Set2") +
+  theme_bw() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text = element_text(size = 10),       
+    panel.grid.major = element_line(color = "gray90"),  
+    panel.grid.minor = element_blank(),                
+    plot.caption = element_text(size = 8, face = "italic", hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
+
+```
+
+### Sale
+
+In 2024, the price of discounted eggs was up to \$0.23 cheaper than the average cost of non sale eggs which was around \$0.53. The largest discount price occurred in July, followed by minor peaks in discounts in October and December, as seen in [@fig-egg-discount].
+
+```{r}
+#| label: fig-egg-discount
+#| fig-cap: "Average 2024 Egg Prices by Discount Type over Time"
+#| fig.width: 5
+#| fig.height: 3
+data |> 
+  mutate(
+    price_per_unit = if_else(price_per_unit > 3, price_per_unit / 12, price_per_unit),
+    month = month(time) 
+  ) |> 
+  group_by(month, sale) |>  
+  summarise(avg_price = mean(price_per_unit, na.rm = TRUE), .groups = "drop") |> 
+  ggplot(aes(x = month, y = avg_price, color = sale, group = sale)) + 
+  geom_line() +   
+  labs(
+    x = "Month",               
+    y = "Average Price per Egg", 
+    color = "Sale"
+  ) + 
+  scale_x_continuous(
+    breaks = 1:12,  
+    labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  ) + 
+  scale_color_brewer(palette = "Set2") +
+  theme_bw() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text = element_text(size = 10),       
+    panel.grid.major = element_line(color = "gray90"),  
+    panel.grid.minor = element_blank(),                
+    plot.caption = element_text(size = 8, face = "italic", hjust = 1),
+    axis.title.x = element_text(margin = margin(t = 10)),
+    axis.title.y = element_text(margin = margin(r = 10))
+  )
+
+```
+
+## Measurement
+
+The data set used for this analysis was sourced from Jacob Filipp's Project Hammer, a project with the goal of "increasing competition" and "reducing collusion" in the Canadian grocery market [@citeData]. This data set contains time series data of grocery prices, collected from major food retailers in Canada in the year 2024. Additional information such as brand information, unit description, and product name were also collected and assigned a product id.
+
+The data used for this analysis was sourced from Jacob Filipp's Project Hammer, a project with the goal of "increasing competition" and "reducing collusion" in the Canadian grocery market - cite. The raw data consists of two data sets, one containing product information of groceries at popular Canadian food retailers, and the other containing the time series data of product prices. The conjoined data set is large and has over 10,000 entries.
 
 # Results
-The biggest factor that affect egg prices is the vendor. As we can see from @fig-vendor, Loblaws essentially dictates what prices eggs should have. If we see egg prices by brand, they are mostly stable. In the earlier months of the year prices were relatively lower than prices in the middle of the year. Prices are also decreasing towards the end of the year. The cheapest eggs are available from No Name and the most expensive eggs are the eggs from PC Blue and PC Organics. Smaller eggs are also cheaper than larger eggs. Using these results consumers can make more educated food choices to save money. 
 
+The biggest factor that affect egg prices is the vendor. As we can see from @fig-vendor, Loblaws essentially dictates what prices eggs should have. If we see egg prices by brand, they are mostly stable. In the earlier months of the year prices were relatively lower than prices in the middle of the year. Prices are also decreasing towards the end of the year. The cheapest eggs are available from No Name and the most expensive eggs are the eggs from PC Blue and PC Organics. Smaller eggs are also cheaper than larger eggs. Using these results consumers can make more educated food choices to save money.
 
 # Discussion
+
 The best way to reduce prices is to get rid of the Canadian grocery monopoly. Unfortunately, this is pretty difficult for the average consumer so some actionable ideas are to buy groceries from the brand No Name. Some other ideas are to eat more plant based meals, buy groceries that last longer such as beans and rice in bulk, and meal planning in advance, [@citeHughes].
 
-This analysis is not perfect due to missing data and bias. Outside of these major grocery chains, there are many smaller farmers who sell their food locally, their prices are not reflected in the data. Additionally, to understand the whole picture of food prices its important to take food substitutions into consideration. When prices are very high, people may opt to use food substitutions, this analysis fails to take food substitutions into account. 
+This analysis is not perfect due to missing data and bias. Outside of these major grocery chains, there are many smaller farmers who sell their food locally, their prices are not reflected in the data. Additionally, to understand the whole picture of food prices its important to take food substitutions into consideration. When prices are very high, people may opt to use food substitutions, this analysis fails to take food substitutions into account.
 
 There is also a correlation between size and price but there are also some discrepancies which may be the result of egg quality. This factor wasn't taken into account in the analysis. We can't say that larger egg sizes cause higher prices.
-
-
-```{r}
-#| label: fig-egg
-#| fig-cap: "Average Egg Carton Prices By Egg Size in 2024"
-egg_size_data <- data |>
-  mutate(size = case_when(
-    product_name == "Extra Large Size Free-Range Brown Eggs" ~ 'Extra Large',
-    product_name == "Grade A Brown Eggs, Extra Large" ~ "Extra Large",
-    product_name == "Grade A Eggs, Super Extra-Large" ~ "Extra Large",
-    product_name == "Extra Large Free Run Brown Eggs" ~ "Extra Large",
-    product_name == "Super Bon-Ee Grade A White Eggs, Super Extra Large" ~ "Super Extra Large",
-    product_name == "Medium Grade A White Eggs" ~ "Small",
-    product_name == "Naturegg Free Run Omega 3 Eggs" ~ "Small",
-    product_name == "Omega 3 White Eggs" ~ "Small",
-    product_name == "Super Bon-Ee Grade A Double Yolk White Eggs" ~ "Small",
-    product_name == "Medium Size Free-Range Brown Eggs " ~ "Medium",
-    TRUE ~ "Large"
-  )) |>
-  filter(!is.na(current_price)) |>
-  mutate(month = format(nowtime, "%m")) |>
-  select(size, current_price, month) |>
-  group_by(size, month) |>
-  summarise(avg_price = mean(current_price), .groups = "drop")
-
-egg_size_data |>
-  ggplot(aes(x = month, y = avg_price, color = size, group = size)) +
-  geom_point() +
-  geom_line() +
-  labs(x = "Month", y = "Average Egg Carton Price", color = "Size") +
-  theme_minimal()
-```
