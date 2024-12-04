@@ -17,4 +17,3 @@ actual_values <- test_data$price_per_unit
 rmse <- sqrt(mean((actual_values - test_predictions)^2))
 print(rmse)
 saveRDS(train_model, file = "./model/model.rds")
-
