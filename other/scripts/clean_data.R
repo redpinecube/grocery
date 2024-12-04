@@ -1,4 +1,4 @@
-
+library(arrow)
 library(tidyverse)
 product <- read_csv("./data/raw/hammer-4-product.csv")
 
@@ -63,4 +63,5 @@ data <- data |>
   select(!product_name)
 
 write_csv(data, "./data/clean/clean_data.csv")
+write_parquet(data, "./data/clean/clean_data.parquet")
 
