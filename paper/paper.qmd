@@ -361,11 +361,50 @@ Similarly, assessing farming conditions is inherently subjective. Farmers within
 
 # Model
 
+A multivariate linear regression model was built to predict egg prices. The predictors chosen for the model were: sale, organic, brown, voila and month. All variables except for month are indicator variables. Month is an integer that represents the months past the first day of 2024. This model can be represented using the following equation :
+
+$$
+\text{price} = \beta_0 + \beta_1 \cdot \text{sale} + \beta_2 \cdot \text{voila} + \beta_3 \cdot \text{brown} + \beta_4 \cdot \text{large} + \beta_5 \cdot \text{organic}
+\tag{1}
+$$
+
+Where :
+
+$\beta_0$ is the intercept.
+
+$\beta_1, \beta_2, \cdots, \beta_5$ are the coefficients for the independent variables defined.
+
+$\epsilon$ is the error term that accounts for uncertainty.
+
+This model assumes that the predictor variables are independent of each other. It also assumes linear relationships between the predictors and egg pricing. The potential limitation of this model is that it's susceptible to outliers. Extreme values could significantly alter results. The variables included in the model were selected based on their strong linear relationships with egg prices as identified in the data section. Indicator variables were used to numerically represent categorical features, making them suitable for multivariate linear regression.
+
+While time series models are considered due to the temporal nature of the data, the limited historical data available led to the decision to prioritize this linear regression model. Additionally, this analysis uses the abundance of product-related information to focus on exploring the effects that brands and vendors have on egg pricing, making this analysis a good use case for multivariate linear regression. R [@citeR] was used to create and validate this model using RMSE.
+
 # Results
 
-The biggest factor that affect egg prices is the vendor. As we can see from @fig-vendor, Loblaws essentially dictates what prices eggs should have. If we see egg prices by brand, they are mostly stable. In the earlier months of the year prices were relatively lower than prices in the middle of the year. Prices are also decreasing towards the end of the year. The cheapest eggs are available from No Name and the most expensive eggs are the eggs from PC Blue and PC Organics. Smaller eggs are also cheaper than larger eggs. Using these results consumers can make more educated food choices to save money.
+The following estimator $\hat{p}$ for price was constructed using prepossessed data :
 
-# Discussion
+$$
+\hat{p} = 0.60 -0.05 \cdot \text{sale} -0.12 \cdot \text{voila} + 0.06 \cdot \text{brown} + -0.02 \cdot \text{large} + 0.18 \cdot \text{organic}
+\tag{2}
+$$
+
+```{r}
+#| label: fig-table
+#| fig-cap: "Model Summary"
+
+library(knitr)
+library(broom)
+model <- readRDS("../model/model.rds")
+tidy_model <- tidy(model)
+tidy_model <- tidy_model |>
+  mutate(across(where(is.numeric), round, 2))
+kable(tidy_model)
+```
+
+This estimator has a RMSE score of 0.08. RMSE was calculated by splitting data into randomized training and testing sets with an 80 20 split. Additional model information can be seen in [@fig-table].
+
+## Discussion
 
 The best way to reduce prices is to get rid of the Canadian grocery monopoly. Unfortunately, this is pretty difficult for the average consumer so some actionable ideas are to buy groceries from the brand No Name. Some other ideas are to eat more plant based meals, buy groceries that last longer such as beans and rice in bulk, and meal planning in advance, [@citeHughes].
 
