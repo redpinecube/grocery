@@ -1,7 +1,7 @@
-# Inflation of Egg Prices Across Canadian Grocery Stores
+# Prominent Factors that Influenced Canadian Egg Prices in 2024
 
 ## Abstract
-After the COVID-19 pandemic, inflation has been a large economic issue for the majority of Canadians. This analysis studies the inflation of egg prices in 2024 and finds that prices towards the end of the year have decreased in comparison to mid 2024. By understanding how the prices of staple grocery items fluctuate, we can gauge the effect of inflation on the general Canadian consumer.
+A multivariate linear regression model was applied to egg pricing data from 2024. Key factors such as farming conditions, vendor, and egg color were identified as significant predictors of egg prices over time. These findings can help consumers make more informed decisions while grocery shopping.
 
 ## File Structure
 The repo is structured as follows :
@@ -9,7 +9,8 @@ The repo is structured as follows :
 -   `data` contains the raw data obtained from: https://jacobfilipp.com/hammer/
 -   `other` contains initial sketches of figures and LLM interactions.
 -   `paper` contains the files used to generate the paper, including the Quarto document and reference bibliography file, as well as the PDF of the paper. 
--   `scripts` contains the SQL scripts to clean data. It contains R scripts to simulate and test data.  
+-   `scripts` contains the R and SQL scripts to clean, simulate, and test data.
+-   shiny.R is a shiny app that show egg prices over time. 
   
 ## Reproducibility 
 This project is an R project.
